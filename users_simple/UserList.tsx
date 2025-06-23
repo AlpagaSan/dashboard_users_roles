@@ -1,7 +1,7 @@
 // features/users/UserList.tsx
 import { useEffect, useState } from 'react';
 import { UserForm } from './UserForm';
-import { getUsers, updateUser, deleteUser, addUser } from './userService';
+import { getUsers } from './userService';
 import type { User, UserFields } from './types';
 
 // Composant qui affiche la liste des utilisateurs
@@ -67,22 +67,21 @@ export function UserList() {
   }, [search, users]);
 
   // Callback pour ajouter un nouvel utilisateur
-  const handleAddUser = async (newUser: User) => {
-    setActionLoading(true);
-    try {
-      const added = await addUser(newUser);
-      const all = await getUsers();
-      setUsers(all);
-    } finally {
-      setActionLoading(false);
-    }
+  const handleAddUser = (newUser: User) => {
+    // prev représente la liste actuelle des utilisateurs au moment précis de l'appel.
+    // On retourne une nouvelle liste avec le nouvel utilisateur ajouté à la fin.
+    setUsers(prev => [...prev, newUser]);
   };
 
   // Callback pour modifier un nouvel utilisateur
   const handleEditUser = (user: User) => {
+    // Lorsqu'on clique sur "Modifier", on remplit le formulaire d'édition avec les données de l'utilisateur
+    // On utilise setEditUserId pour stocker l'ID de l'utilisateur en cours d'édition
+    // Cela permet de savoir quel utilisateur est en cours d'édition
     setEditUserId(user.id);
+    // On remplit le formulaire d'édition avec les données de l'utilisateur
+    // Cela permet de pré-remplir les champs du formulaire avec les données existantes  
     setEditForm({ name: user.name, email: user.email, role: user.role });
-    setFormError(null);
   };
 
   // Gère les changements dans le formulaire d'édition
@@ -97,7 +96,7 @@ export function UserList() {
 
   // Callback pour enregistrer les modifications d'un utilisateur
   // userId est l'ID de l'utilisateur en cours d'édition
-  const handleEditSave = async (userId: number) => {
+  const handleEditSave = (userId: number) => {
     // Vérifie que le formulaire d'édition n'est pas vide
     if (!editForm) return;
 
@@ -116,16 +115,14 @@ export function UserList() {
     }
 
     setActionLoading(true);
-    setFormError(null);
-    try {
-      await updateUser({ id: userId, ...editForm });
-      const all = await getUsers();
-      setUsers(all);
+    setTimeout(() => {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, ...editForm } : u))
+      );
       setEditUserId(null);
       setEditForm(null);
-    } finally {
       setActionLoading(false);
-    }
+    }, 300);
   };
 
   // Callback pour annuler l'édition d'un utilisateur
@@ -140,19 +137,16 @@ export function UserList() {
   };
 
   // Callback pour supprimer un nouvel utilisateur
-  const handleDeleteUser = async (userId: number) => {
+  const handleDeleteUser = (userId: number) => {
     const user = users.find((u) => u.id === userId);
     if (!user) return;
     if (!confirm(`Supprimer l'utilisateur "${user.name}" ?`)) return;
 
     setActionLoading(true);
-    try {
-      await deleteUser(userId);
-      const all = await getUsers();
-      setUsers(all);
-    } finally {
+    setTimeout(() => {
+      setUsers((prev) => prev.filter((user) => user.id !== userId));
       setActionLoading(false);
-    }
+    }, 300);
   };
 
   // Affiche un message de chargement ou d'erreur si nécessaire

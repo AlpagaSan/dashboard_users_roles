@@ -50,11 +50,7 @@ export function UserForm({ onAdd, nextId }: UserFormProps) {
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      data-testid="user-form"
-      style={{ marginBottom: 20 }}
-    >
+    <form onSubmit={handleSubmit} style={{ marginBottom: 20 }}>
       <h3>Ajouter un utilisateur</h3>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
         <input
